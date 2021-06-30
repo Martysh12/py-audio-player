@@ -1,6 +1,9 @@
 import curses
+import _curses
+
 import pygame
-import time
+
+from time import strftime, gmtime
 import sys
 import os
 
@@ -30,6 +33,9 @@ BORDER_CHARS = { # │ ─ ┌ ┬ ┐ ├ ┼ ┤ └ ┴ ┘
 }
 
 def main(stdscr):
+	stdscr.nodelay(True)
+	curses.curs_set(False)
+
 	current_file = sys.argv[1]
 	name = os.path.basename(current_file)
 
@@ -53,9 +59,36 @@ def main(stdscr):
 		# Using insstr because addstr fails when trying to place a character at the bottom right corner
 		stdscr.insstr(lines - 1, 0, BORDER_CHARS["corners"]["up_right"] + (BORDER_CHARS["flat"]["horizontal"] * (cols - 2)) + BORDER_CHARS["corners"]["up_left"])
 
+
+
+		# Adding sound metadata
+		# Name
+		stdscr.addstr(2, 2, name.center(cols - 4))
+		stdscr.addstr(2, 2, "Currently playing:")
+
+		# Duration
+		if snd_length > 60:
+			if snd_length > 3600:
+				stdscr.addstr(3, 2, strftime("%H hours, %M minutes and %S seconds", gmtime(snd_length)).center(cols - 4))
+			else:
+				stdscr.addstr(3, 2, strftime("%M minutes and %S seconds", gmtime(snd_length)).center(cols - 4))
+		else:
+			stdscr.addstr(3, 2, strftime("%S seconds", gmtime(snd_length)).center(cols - 4))
+		stdscr.addstr(3, 2, "Duration:")
+
+
+
+		# Adding instructions
+		stdscr.addstr(lines - 2, 2, "SPACE to pause/unpause, S to stop, Q to quit.")
+
+
+
 		stdscr.refresh()
 
-		key = stdscr.getch()
+		try:
+			key = stdscr.getch()
+		except _curses.ERR:
+			continue
 
 		if key == ord(' '):
 			if is_paused:
