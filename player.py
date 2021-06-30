@@ -79,7 +79,7 @@ def main(stdscr):
 
 
 		# Adding instructions
-		stdscr.addstr(lines - 2, 2, "SPACE to pause/unpause, S to stop, Q to quit.")
+		stdscr.addstr(lines - 2, 2, "SPACE to pause/unpause, S to stop, Q to quit.".ljust(cols - 4), curses.A_REVERSE)
 
 
 
