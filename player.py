@@ -3,6 +3,8 @@ import _curses
 
 import pygame
 
+from timetrack import Watch
+
 from time import strftime, gmtime
 import sys
 import os
@@ -47,6 +49,8 @@ def main(stdscr):
 
 	snd_length = snd.get_length()
 
+	w = Watch()
+
 	while True:
 		lines, cols = stdscr.getmaxyx()
 		
@@ -67,23 +71,18 @@ def main(stdscr):
 		stdscr.addstr(2, 2, "Currently playing:")
 
 		# Duration
-		if snd_length > 60:
-			if snd_length > 3600:
-				stdscr.addstr(3, 2, strftime("%H hours, %M minutes and %S seconds", gmtime(snd_length)).center(cols - 4))
-			else:
-				stdscr.addstr(3, 2, strftime("%M minutes and %S seconds", gmtime(snd_length)).center(cols - 4))
-		else:
-			stdscr.addstr(3, 2, strftime("%S seconds", gmtime(snd_length)).center(cols - 4))
-		stdscr.addstr(3, 2, "Duration:")
+		stdscr.addstr(3, 2, (strftime("%H:%M:%S", gmtime(w.get_time())) + "/" + strftime("%H:%M:%S", gmtime(snd_length))).rjust(cols - 4))
 
 
 
 		# Adding instructions
 		stdscr.addstr(lines - 2, 2, "SPACE to pause/unpause, S to stop, Q to quit.".ljust(cols - 4), curses.A_REVERSE)
 
-
-
 		stdscr.refresh()
+
+		if w.get_time() > snd_length:
+			w.stop()
+			chn.stop()
 
 		try:
 			key = stdscr.getch()
@@ -95,20 +94,25 @@ def main(stdscr):
 				if stopped:
 					chn.play(snd)
 					stopped = False
+					w.start()
 				else:
 					chn.unpause()
+					w.unpause()
 			else:
 				chn.pause()
+				w.pause()
 
 			is_paused = not is_paused
 
-		if key == ord('s'):
+		if (key == ord('s')) and (stopped == False):
 			is_paused = True
 			stopped = True
 			chn.stop()
+			w.stop()
 
 		if key == ord('q'):
 			chn.stop()
+			w.stop()
 			break
 
 
