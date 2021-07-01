@@ -6,6 +6,7 @@ import pygame
 from timetrack import Watch
 
 from time import strftime, gmtime
+import math
 import sys
 import os
 
@@ -71,9 +72,33 @@ def main(stdscr):
 		stdscr.addstr(2, 2, "Currently playing:")
 
 		# Duration
-		stdscr.addstr(3, 2, (strftime("%H:%M:%S", gmtime(w.get_time())) + "/" + strftime("%H:%M:%S", gmtime(snd_length))).rjust(cols - 4))
+		stdscr.addstr(4, 2, (strftime("%H:%M:%S", gmtime(w.get_time())) + "/" + strftime("%H:%M:%S", gmtime(snd_length))).rjust(cols - 4))
 
+		SPACE_TAKEN = 24 # Amount of space the time, borders and other things take around the progress bar
 
+		if stopped:
+			if w.start_time == 0: # Program has just been opened, show no progress bar
+				chars = ""
+			else:
+				chars = "█" * (cols - SPACE_TAKEN)
+		else:
+			char_num = (w.get_time() / snd_length) * (cols - SPACE_TAKEN)
+
+			chars = "█" * math.floor(char_num)
+
+			if char_num - math.floor(char_num) > 0.5:
+				chars += "▌"
+
+		stdscr.addstr(4, 4, chars)
+
+		# Adding status
+		if is_paused:
+			if stopped:
+				stdscr.addstr(4, 2, u"■")
+			else:
+				stdscr.addstr(4, 2, u"‖")
+		else:
+			stdscr.addstr(4, 2, u"►")
 
 		# Adding instructions
 		stdscr.addstr(lines - 2, 2, "SPACE to pause/unpause, S to stop, Q to quit.".ljust(cols - 4), curses.A_REVERSE)
@@ -81,6 +106,8 @@ def main(stdscr):
 		stdscr.refresh()
 
 		if w.get_time() > snd_length:
+			stopped = True
+			is_paused = True
 			w.stop()
 			chn.stop()
 

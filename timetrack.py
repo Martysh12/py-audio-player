@@ -6,6 +6,7 @@ class Watch:
 		self.time_paused = 0
 		self.pause_start = 0
 		self.paused_at = 0
+		self.stopped_at = 0
 
 		self.paused = True
 		self.stopped = True
@@ -25,9 +26,7 @@ class Watch:
 		self.paused = False
 
 	def stop(self):
-		self.start_time = 0
-		self.time_paused = 0
-		self.paused_at = 0
+		self.stopped_at = time.time()
 
 		self.stopped = True
 		self.paused = True
